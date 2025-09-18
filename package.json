@@ -2,14 +2,14 @@
   "name": "reactproject",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://meko568.github.io/weather-app",
+  "homepage": "https://meko568.github.io/weather",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start",
-    "lint": "eslint",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "lint": "eslint"
   },
   "dependencies": {
     "next": "15.5.3",
