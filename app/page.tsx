@@ -1,5 +1,4 @@
 'use client'
-import Image from "next/image";
 import styles from "./page.module.css";
 import {useState, useEffect} from "react"
 
@@ -9,7 +8,7 @@ export default function Home() {
     return new Date(sunrise * 1000).toLocaleTimeString(); // multiply by 1000 to convert seconds → ms
   }
   function getWindDirection(deg: number): string {
-    const directions = ["North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NourthWest"];
+    const directions = ["North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest"];
     const index = Math.round(deg / 45) % 8;
     return directions[index];
   }
@@ -23,53 +22,112 @@ export default function Home() {
     });
   }
   
+  // Strongly typed shapes for the OpenWeatherMap response (expanded per your pasted example)
+  type WeatherMain = {
+    temp: number;
+    feels_like: number;
+    temp_min: number;
+    temp_max: number;
+    pressure: number;
+    humidity: number;
+  };
+
+  type WeatherSys = {
+    sunrise: number;
+    sunset: number;
+    country?: string;
+    type?: number;
+    id?: number;
+  };
+
+  type WeatherWind = {
+    speed: number;
+    deg: number;
+    gust?: number;
+  };
+
+  type WeatherSummary = {
+    main: string;
+    description: string;
+    icon?: string;
+  };
+
+  type Weather = {
+    main: WeatherMain;
+    sys: WeatherSys;
+    wind: WeatherWind;
+    visibility: number;
+    timezone: number;
+    weather: WeatherSummary[];
+    // Additional fields from your example (optional)
+    base?: string;
+    clouds?: { all: number };
+    cod?: number;
+    coord?: { lon: number; lat: number };
+    dt?: number;
+    id?: number;
+    name?: string;
+  };
+
+  type CityWeather = {
+    name: string;
+    lat: number;
+    lon: number;
+    weather: Weather | null;
+  };
   
-  let [cities, setCities] = useState<any[]>([
-    { name: "Cairo", lat: 30.0444, lon: 31.2357, weather: {} },
-    { name: "Giza", lat: 30.0131, lon: 31.2089, weather: {} },
-    { name: "Alexandria", lat: 31.2001, lon: 29.9187, weather: {} },
-    { name: "Port Said", lat: 31.2653, lon: 32.3019, weather: {} },
-    { name: "Suez", lat: 29.9668, lon: 32.5498, weather: {} },
-    { name: "Ismailia", lat: 30.6043, lon: 32.2723, weather: {} },
-    { name: "Luxor", lat: 25.6872, lon: 32.6396, weather: {} },
-    { name: "Aswan", lat: 24.0889, lon: 32.8998, weather: {} },
-    { name: "Asyut", lat: 27.18, lon: 31.1837, weather: {} },
-    { name: "Beni Suef", lat: 29.0661, lon: 31.0994, weather: {} },
-    { name: "Faiyum", lat: 29.3084, lon: 30.8418, weather: {} },
-    { name: "Minya", lat: 28.1099, lon: 30.7503, weather: {} },
-    { name: "Sohag", lat: 26.556, lon: 31.6948, weather: {} },
-    { name: "Qena", lat: 26.1551, lon: 32.716, weather: {} },
-    { name: "Hurghada", lat: 27.2579, lon: 33.8116, weather: {} },
-    { name: "Damanhur", lat: 31.0341, lon: 30.4682, weather: {} },
-    { name: "Zagazig", lat: 30.5877, lon: 31.502, weather: {} },
-    { name: "Mansoura", lat: 31.0409, lon: 31.3785, weather: {} },
-    { name: "Tanta", lat: 30.7885, lon: 31.0004, weather: {} },
-    { name: "Shibin El Kom", lat: 30.5526, lon: 30.9963, weather: {} },
-    { name: "Kafr El Sheikh", lat: 31.1107, lon: 30.939, weather: {} },
-    { name: "Marsa Matruh", lat: 31.3543, lon: 27.2373, weather: {} },
-    { name: "Kharga", lat: 25.451, lon: 30.5466, weather: {} },
-    { name: "Arish", lat: 31.1316, lon: 33.7984, weather: {} },
-    { name: "El Tor", lat: 28.241, lon: 33.6222, weather: {} },
-    { name: "Damietta", lat: 31.4165, lon: 31.8133, weather: {} },
-    { name: "Banha", lat: 30.4591, lon: 31.1786, weather: {} }
-  ]);
+  // Static list used for initial state and fetch; keeps effect dependency stable
+  const initialCities: Array<Pick<CityWeather, 'name' | 'lat' | 'lon'>> = [
+    { name: "Cairo", lat: 30.0444, lon: 31.2357 },
+    { name: "Giza", lat: 30.0131, lon: 31.2089 },
+    { name: "Alexandria", lat: 31.2001, lon: 29.9187 },
+    { name: "Port Said", lat: 31.2653, lon: 32.3019 },
+    { name: "Suez", lat: 29.9668, lon: 32.5498 },
+    { name: "Ismailia", lat: 30.6043, lon: 32.2723 },
+    { name: "Luxor", lat: 25.6872, lon: 32.6396 },
+    { name: "Aswan", lat: 24.0889, lon: 32.8998 },
+    { name: "Asyut", lat: 27.18, lon: 31.1837 },
+    { name: "Beni Suef", lat: 29.0661, lon: 31.0994 },
+    { name: "Faiyum", lat: 29.3084, lon: 30.8418 },
+    { name: "Minya", lat: 28.1099, lon: 30.7503 },
+    { name: "Sohag", lat: 26.556, lon: 31.6948 },
+    { name: "Qena", lat: 26.1551, lon: 32.716 },
+    { name: "Hurghada", lat: 27.2579, lon: 33.8116 },
+    { name: "Damanhur", lat: 31.0341, lon: 30.4682 },
+    { name: "Zagazig", lat: 30.5877, lon: 31.502 },
+    { name: "Mansoura", lat: 31.0409, lon: 31.3785 },
+    { name: "Tanta", lat: 30.7885, lon: 31.0004 },
+    { name: "Shibin El Kom", lat: 30.5526, lon: 30.9963 },
+    { name: "Kafr El Sheikh", lat: 31.1107, lon: 30.939 },
+    { name: "Marsa Matruh", lat: 31.3543, lon: 27.2373 },
+    { name: "Kharga", lat: 25.451, lon: 30.5466 },
+    { name: "Arish", lat: 31.1316, lon: 33.7984 },
+    { name: "El Tor", lat: 28.241, lon: 33.6222 },
+    { name: "Damietta", lat: 31.4165, lon: 31.8133 },
+    { name: "Banha", lat: 30.4591, lon: 31.1786 },
+  ];
+
+  const [cities, setCities] = useState<CityWeather[]>(
+    initialCities.map((c) => ({ ...c, weather: null }))
+  );
   useEffect(() => {
-    async function getWeather(lat:number, lon: number): Promise<any> {
+    async function getWeather(lat:number, lon: number): Promise<Weather> {
       const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=670bbd8c254a4185251fc8f5eae1302d&units=metric`
       );
       return await res.json();
     }
   
-    Promise.all(cities.map(c => getWeather(c.lat, c.lon)))
+    Promise.all(initialCities.map(c => getWeather(c.lat, c.lon)))
       .then((results) => {
-        const updated = cities.map((c, i) => ({
+        const updated: CityWeather[] = initialCities.map((c, i) => ({
           ...c,
           weather: results[i]
         }));
         setCities(updated);
       });
-  }, []);
+    }, []);
+    console.log(cities);
 
   const [query, setQuery] = useState<string>("");
 
@@ -129,7 +187,7 @@ export default function Home() {
         {filteredCities.map((e, index) => (
   <div key={index} className={styles.city}>
     <h1>{e.name}</h1>
-    {e.weather.main ? (
+    {e.weather ? (
       <>
         <h1>{formatLocalTime(e.weather.sys.sunrise, e.weather.timezone)}</h1>
         <h2>{e.weather.weather[0].main}</h2>
