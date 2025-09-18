@@ -5,10 +5,11 @@
   "homepage": "https://meko568.github.io/weather",
   "scripts": {
     "dev": "next dev --turbopack",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "next start",
+    "build": "next build",
+    "postbuild": "node -e \"require('fs').mkdirSync('out',{recursive:true});require('fs').writeFileSync('out/.nojekyll','')\"",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
+    "deploy": "gh-pages -d out",
     "lint": "eslint"
   },
   "dependencies": {
