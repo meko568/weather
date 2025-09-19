@@ -3,23 +3,26 @@ import styles from "./page.module.css";
 import {useState, useEffect} from "react"
 
 export default function Home() {
-  function gettime(time: number){
-    const sunrise = time; // from API
-    return new Date(sunrise * 1000).toLocaleTimeString(); // multiply by 1000 to convert seconds → ms
-  }
+  // Format a UNIX timestamp (seconds) for a target city's local time using
+  // OpenWeather's timezone offset (in seconds). This avoids relying on the
+  // browser's locale/timezone which can produce inconsistent output across environments.
   function getWindDirection(deg: number): string {
     const directions = ["North", "NorthEast", "East", "SouthEast", "South", "SouthWest", "West", "NorthWest"];
     const index = Math.round(deg / 45) % 8;
     return directions[index];
   }
   function formatLocalTime(unix: number, timezoneOffset: number): string {
-    // unix is in seconds, timezoneOffset is in seconds
-    const localTime = new Date((unix + timezoneOffset) * 1000);
-    return localTime.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true
-    });
+    // unix and timezoneOffset are both in seconds.
+    // Add the offset to get the city's local time in UTC terms, then format via UTC methods to
+    // avoid any additional local timezone adjustments on the client machine.
+    const ms = (unix + timezoneOffset) * 1000;
+    const d = new Date(ms);
+    const hours = d.getUTCHours();
+    const minutes = d.getUTCMinutes();
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hour12 = hours % 12 || 12; // convert 0 → 12 for 12-hour clock
+    const mm = minutes.toString().padStart(2, '0');
+    return `${hour12}:${mm} ${period}`;
   }
   
   // Strongly typed shapes for the OpenWeatherMap response (expanded per your pasted example)
@@ -199,8 +202,8 @@ export default function Home() {
           <p>Min temp: {e.weather.main.temp_min} °C</p>
         </div>
         <div className={styles.details}>
-          <p>Sunrise: {gettime(e.weather.sys.sunrise)}</p>
-          <p>Sunset: {gettime(e.weather.sys.sunset)}</p>
+          <p>Sunrise: {formatLocalTime(e.weather.sys.sunrise, e.weather.timezone)}</p>
+          <p>Sunset: {formatLocalTime(e.weather.sys.sunset, e.weather.timezone)}</p>
           <p>Humidity: {e.weather.main.humidity}%</p>
           <p>
             Wind: {e.weather.wind.speed} m/s (
