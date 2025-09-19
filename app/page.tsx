@@ -417,50 +417,73 @@ export default function Home() {
     <div className={styles.page}>
       {error && <div className={styles.error}>{error}</div>}
       <main className={styles.main}>
-        <div className={styles.minicontainer}>
         <div className={styles.search}>
           <div className={styles.searchContainer}>
-            <div className={styles.countrySearchContainer}>
-              <input
-                type="text"
-                value={countrySearch}
-                onChange={(e) => setCountrySearch(e.target.value)}
-                placeholder="Search country..."
-                className={styles.countrySearchInput}
-                aria-label="Search country"
-              />
+            <div className={styles.searchGroup}>
+              <label htmlFor="countrySearch" className={styles.searchLabel}>Search Country</label>
+              <div className={styles.countrySearchContainer}>
+                <span className={styles.searchIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                </span>
+                <input
+                  id="countrySearch"
+                  type="text"
+                  value={countrySearch}
+                  onChange={(e) => setCountrySearch(e.target.value)}
+                  placeholder="Search country..."
+                  className={styles.countrySearchInput}
+                  aria-label="Search country"
+                />
+                <div className={styles.countrySelectContainer}>
+                  <select
+                    value={selectedCountry}
+                    onChange={(e) => {
+                      setSelectedCountry(e.target.value);
+                      setCountrySearch(''); // Clear search after selection
+                    }}
+                    className={styles.countrySelect}
+                    aria-label="Select country"
+                  >
+                    {countries.length === 0 ? (
+                      <option value="" disabled>No countries found</option>
+                    ) : (
+                      countries.map(country => (
+                        <option key={country.code} value={country.code}>
+                          {country.name} ({country.code})
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
               </div>
-              </div>
-              <select
-                value={selectedCountry}
-                onChange={(e) => {
-                  setSelectedCountry(e.target.value);
-                  setCountrySearch(''); // Clear search after selection
-                }}
-                className={styles.countrySelect}
-                aria-label="Select country"
-                size={countries.length > 5 ? 5 : countries.length}
-              >
-                {countries.length === 0 ? (
-                  <option value="" disabled>No countries found</option>
-                ) : (
-                  countries.map(country => (
-                    <option key={country.code} value={country.code}>
-                      {country.name} ({country.code})
-                    </option>
-                  ))
-                )}
-              </select>
             </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={`Search in ${selectedCountry ? countries.find(c => c.code === selectedCountry)?.name || 'selected country' : 'cities'}...`}
-              aria-label="Search cities"
-              className={styles.searchInput}
-              disabled={!selectedCountry || selectedCountry === 'all'}
-            />
+
+            <div className={styles.searchGroup}>
+              <label htmlFor="citySearch" className={styles.searchLabel}>Search City</label>
+              <div style={{ position: 'relative' }}>
+                <span className={styles.searchIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </span>
+                <input
+                  id="citySearch"
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={selectedCountry 
+                    ? `Search in ${countries.find(c => c.code === selectedCountry)?.name || 'selected country'}...`
+                    : 'Select a country first'}
+                  aria-label="Search cities"
+                  className={styles.searchInput}
+                  disabled={!selectedCountry || selectedCountry === 'all'}
+                />
+              </div>
+            </div>
           </div>
           <button
             type="button"
