@@ -11,18 +11,39 @@ export default function Home() {
     const index = Math.round(deg / 45) % 8;
     return directions[index];
   }
-  function formatLocalTime(unix: number, timezoneOffset: number): string {
-    // unix and timezoneOffset are both in seconds.
-    // Add the offset to get the city's local time in UTC terms, then format via UTC methods to
-    // avoid any additional local timezone adjustments on the client machine.
-    const ms = (unix + timezoneOffset) * 1000;
-    const d = new Date(ms);
-    const hours = d.getUTCHours();
-    const minutes = d.getUTCMinutes();
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const hour12 = hours % 12 || 12; // convert 0 → 12 for 12-hour clock
-    const mm = minutes.toString().padStart(2, '0');
-    return `${hour12}:${mm} ${period}`;
+  function LocalTime({ unix, timezoneOffset }: { unix: number; timezoneOffset: number }) {
+    const [time, setTime] = useState(() => {
+      // Initial time calculation
+      const date = new Date((unix + timezoneOffset) * 1000);
+      return date.toLocaleTimeString('en-US', {
+        timeZone: 'UTC',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+    });
+
+    useEffect(() => {
+      // Update time every second
+      const interval = setInterval(() => {
+        const now = Math.floor(Date.now() / 1000); // Current time in seconds
+        const localNow = now + timezoneOffset;
+        const date = new Date(localNow * 1000);
+        setTime(
+          date.toLocaleTimeString('en-US', {
+            timeZone: 'UTC',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          })
+        );
+      }, 1000);
+
+      // Clean up interval on component unmount
+      return () => clearInterval(interval);
+    }, [timezoneOffset]);
+
+    return <>{time}</>;
   }
   
   // Strongly typed shapes for the OpenWeatherMap response (expanded per your pasted example)
@@ -38,15 +59,15 @@ export default function Home() {
   type WeatherSys = {
     sunrise: number;
     sunset: number;
-    country?: string;
-    type?: number;
-    id?: number;
+    country: string;
+    type: number;
+    id: number;
   };
 
   type WeatherWind = {
     speed: number;
     deg: number;
-    gust?: number;
+    gust: number;
   };
 
   type WeatherSummary = {
@@ -63,13 +84,13 @@ export default function Home() {
     timezone: number;
     weather: WeatherSummary[];
     // Additional fields from your example (optional)
-    base?: string;
-    clouds?: { all: number };
-    cod?: number;
-    coord?: { lon: number; lat: number };
-    dt?: number;
-    id?: number;
-    name?: string;
+    base: string;
+    clouds: { all: number };
+    cod: number;
+    coord: { lon: number; lat: number };
+    dt: number;
+    id: number;
+    name: string;
   };
 
   type CityWeather = {
@@ -113,24 +134,59 @@ export default function Home() {
   const [cities, setCities] = useState<CityWeather[]>(
     initialCities.map((c) => ({ ...c, weather: null }))
   );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    async function getWeather(lat:number, lon: number): Promise<Weather> {
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=670bbd8c254a4185251fc8f5eae1302d&units=metric`
-      );
-      return await res.json();
+    async function getWeather(lat: number, lon: number): Promise<Weather | null> {
+      try {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=670bbd8c254a4185251fc8f5eae1302d&units=metric`
+        );
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch weather data: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        return data;
+      } catch (err) {
+        console.error(`Error fetching weather for lat=${lat}, lon=${lon}:`, err);
+        return null;
+      }
     }
-  
-    Promise.all(initialCities.map(c => getWeather(c.lat, c.lon)))
-      .then((results) => {
+
+    async function fetchAllWeather() {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const results = await Promise.all(
+          initialCities.map(c => getWeather(c.lat, c.lon))
+        );
+
         const updated: CityWeather[] = initialCities.map((c, i) => ({
           ...c,
           weather: results[i]
         }));
+        
         setCities(updated);
-      });
-    }, []);
-    console.log(cities);
+        
+        // Check if any requests failed
+        const failedRequests = results.filter(r => r === null).length;
+        if (failedRequests > 0) {
+          setError(`Failed to load weather for ${failedRequests} cities. Check console for details.`);
+        }
+      } catch (err) {
+        console.error('Error in fetchAllWeather:', err);
+        setError('Failed to load weather data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchAllWeather();
+  }, []);
 
   const [query, setQuery] = useState<string>("");
 
@@ -163,8 +219,17 @@ export default function Home() {
     c.name.toLowerCase().includes(query.toLowerCase())
   );
 
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.loading}>Loading weather data...</div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.page}>
+      {error && <div className={styles.error}>{error}</div>}
       <main className={styles.main}>
         <div className={styles.search}>
           <input
@@ -192,7 +257,7 @@ export default function Home() {
     <h1>{e.name}</h1>
     {e.weather ? (
       <>
-        <h1>{formatLocalTime(e.weather.sys.sunrise, e.weather.timezone)}</h1>
+        <h1><LocalTime unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></h1>
         <h2>{e.weather.weather[0].main}</h2>
         <h3>{e.weather.weather[0].description}</h3>
         <div className={styles.tempcontainer}>
@@ -202,8 +267,8 @@ export default function Home() {
           <p>Min temp: {e.weather.main.temp_min} °C</p>
         </div>
         <div className={styles.details}>
-          <p>Sunrise: {formatLocalTime(e.weather.sys.sunrise, e.weather.timezone)}</p>
-          <p>Sunset: {formatLocalTime(e.weather.sys.sunset, e.weather.timezone)}</p>
+          <p>Sunrise: <LocalTime unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></p>
+          <p>Sunset: <LocalTime unix={e.weather.sys.sunset} timezoneOffset={e.weather.timezone} /></p>
           <p>Humidity: {e.weather.main.humidity}%</p>
           <p>
             Wind: {e.weather.wind.speed} m/s (
