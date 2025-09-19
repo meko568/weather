@@ -266,7 +266,7 @@ export default function Home() {
     <h1>{e.name}</h1>
     {e.weather ? (
       <>
-              <h1>Local Time: <LiveLocalTime timezoneOffset={e.weather.timezone} /></h1>
+              <h1><LiveLocalTime timezoneOffset={e.weather.timezone} /></h1>
         <h2>{e.weather.weather[0].main}</h2>
         <h3>{e.weather.weather[0].description}</h3>
         <div className={styles.tempcontainer}>
