@@ -692,6 +692,7 @@ a.secondary {
 
 /* Theme toggle button */
 .themeToggle {
+  margin-top:20px ;
   width:200px;
   appearance: none;
   border: 1px solid var(--card-border);
@@ -741,7 +742,7 @@ a.secondary {
   }
 
   .container {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 18px;
   }
 
