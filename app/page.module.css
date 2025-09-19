@@ -255,7 +255,7 @@ a.secondary {
   --error: #ef4444;
 }
 
-[data-theme='dark'] {
+[data-theme='dark'] .page {
   --foreground: #ffffff;
   --background: #111827;
   --card-bg: #1f2937;
