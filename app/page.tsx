@@ -266,7 +266,7 @@ export default function Home() {
     <h1>{e.name}</h1>
     {e.weather ? (
       <>
-              <h1>🕒 Local Time: <LiveLocalTime timezoneOffset={e.weather.timezone} /></h1>
+              <h1>Local Time: <LiveLocalTime timezoneOffset={e.weather.timezone} /></h1>
         <h2>{e.weather.weather[0].main}</h2>
         <h3>{e.weather.weather[0].description}</h3>
         <div className={styles.tempcontainer}>
@@ -276,8 +276,8 @@ export default function Home() {
           <p>Min temp: {e.weather.main.temp_min} °C</p>
         </div>
         <div className={styles.details}>
-        <p>🌅 Sunrise: <Sunrise unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></p>
-        <p>🌇 Sunset: <Sunset unix={e.weather.sys.sunset} timezoneOffset={e.weather.timezone} /></p>
+        <p>Sunrise: <Sunrise unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></p>
+        <p>Sunset: <Sunset unix={e.weather.sys.sunset} timezoneOffset={e.weather.timezone} /></p>
           <p>Humidity: {e.weather.main.humidity}%</p>
           <p>
             Wind: {e.weather.wind.speed} m/s (
