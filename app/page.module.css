@@ -242,8 +242,8 @@ a.secondary {
   opacity: 0.95;
 }
 
-:root {
-  /* Light theme */
+.page {
+  /* Light theme variables */
   --foreground: #1a1a1a;
   --background: #ffffff;
   --card-bg: #ffffff;
