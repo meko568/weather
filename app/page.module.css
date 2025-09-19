@@ -246,14 +246,20 @@ a.secondary {
 .search {
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto 8px;
+  margin: 0 auto 24px;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.searchContainer {
+  display: flex;
+  gap: 12px;
+  width: 100%;
 }
 
 .searchInput {
-  width: 100%;
+  flex: 1;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   color: inherit;
@@ -262,6 +268,20 @@ a.secondary {
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   font-size: 14px;
+  min-width: 200px;
+}
+
+.countrySelect {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: inherit;
+  padding: 0 12px;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 180px;
 }
 
 .searchInput::placeholder {
@@ -320,23 +340,30 @@ a.secondary {
 /* Tablets */
 @media (max-width: 768px) {
   .page {
-    padding: 32px 16px;
+    padding: 24px 16px;
   }
 
   .container {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 18px;
   }
 
   .search {
     gap: 12px;
-    flex-wrap: wrap;
+  }
+  
+  .searchContainer {
+    flex-direction: column;
+  }
+  
+  .searchInput,
+  .countrySelect {
+    width: 100%;
   }
 
   .city h1 { font-size: 18px; }
   .city h2 { font-size: 15px; }
   .city h3 { font-size: 13px; }
-
   .tempcontainer p,
   .details p,
   .searchInput { font-size: 13px; }
