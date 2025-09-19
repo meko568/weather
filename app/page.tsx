@@ -257,7 +257,7 @@ export default function Home() {
     <h1>{e.name}</h1>
     {e.weather ? (
       <>
-        <h1><LocalTime unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></h1>
+        <h1><LocalTime unix={Math.floor(Date.now() / 1000)} timezoneOffset={e.weather.timezone} /></h1>
         <h2>{e.weather.weather[0].main}</h2>
         <h3>{e.weather.weather[0].description}</h3>
         <div className={styles.tempcontainer}>
