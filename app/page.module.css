@@ -254,12 +254,15 @@ a.secondary {
 
 .searchContainer {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .searchInput {
-  flex: 1;
+  width: 100%;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   color: inherit;
@@ -268,20 +271,65 @@ a.secondary {
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   font-size: 14px;
-  min-width: 200px;
 }
 
-.countrySelect {
+.countrySearchContainer {
+  position: relative;
+  width: 100%;
+}
+
+.countrySearchInput {
+  width: 100%;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   color: inherit;
-  padding: 0 12px;
+  padding: 12px 14px;
   border-radius: 12px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.countrySelect {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: inherit;
+  padding: 8px 12px;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
   cursor: pointer;
-  min-width: 180px;
+  max-height: 300px;
+  overflow-y: auto;
+  position: absolute;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.countrySelect option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.countrySelect option:hover {
+  background-color: var(--card-hover);
+}
+
+/* Hide the default dropdown arrow in Chrome/Safari */
+.countrySelect::-ms-expand {
+  display: none;
+}
+
+/* Hide the default dropdown arrow in Firefox */
+@-moz-document url-prefix() {
+  .countrySelect {
+    -moz-appearance: none;
+    text-indent: 0.01px;
+    text-overflow: '';
+  }
 }
 
 .searchInput::placeholder {
@@ -357,8 +405,14 @@ a.secondary {
   }
   
   .searchInput,
+  .countrySearchInput,
   .countrySelect {
     width: 100%;
+  }
+  
+  .countrySelect {
+    position: relative;
+    max-height: 200px;
   }
 
   .city h1 { font-size: 18px; }
