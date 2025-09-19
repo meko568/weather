@@ -11,40 +11,49 @@ export default function Home() {
     const index = Math.round(deg / 45) % 8;
     return directions[index];
   }
-  function LocalTime({ unix, timezoneOffset }: { unix: number; timezoneOffset: number }) {
-    const [time, setTime] = useState(() => {
-      // Initial time calculation
-      const date = new Date((unix + timezoneOffset) * 1000);
-      return date.toLocaleTimeString('en-US', {
-        timeZone: 'UTC',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      });
+
+  /**
+   * Convert Unix timestamp + timezone offset into a human-readable local time.
+   */
+  function formatLocalTime(unix: number, timezoneOffset: number): string {
+    const date = new Date((unix + timezoneOffset) * 1000);
+    return date.toLocaleTimeString("en-US", {
+      timeZone: "UTC",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
-
+  }
+  
+  /**
+   * Component for displaying sunrise time
+   */function Sunrise({ unix, timezoneOffset }: { unix: number; timezoneOffset: number }) {
+    return <span>{formatLocalTime(unix, timezoneOffset)}</span>;
+  }
+  
+  /**
+   * Component for displaying sunset time
+   */function Sunset({ unix, timezoneOffset }: { unix: number; timezoneOffset: number }) {
+    return <span>{formatLocalTime(unix, timezoneOffset)}</span>;
+  }
+  
+  /**
+   * Component for displaying the *current* local time (updates every second)
+   */
+  function LiveLocalTime({ timezoneOffset }: { timezoneOffset: number }) {
+    const [time, setTime] = useState(() => formatLocalTime(Math.floor(Date.now() / 1000), timezoneOffset));
+  
     useEffect(() => {
-      // Update time every second
       const interval = setInterval(() => {
-        const now = Math.floor(Date.now() / 1000); // Current time in seconds
-        const localNow = now + timezoneOffset;
-        const date = new Date(localNow * 1000);
-        setTime(
-          date.toLocaleTimeString('en-US', {
-            timeZone: 'UTC',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          })
-        );
+        setTime(formatLocalTime(Math.floor(Date.now() / 1000), timezoneOffset));
       }, 1000);
-
-      // Clean up interval on component unmount
+  
       return () => clearInterval(interval);
     }, [timezoneOffset]);
-
-    return <>{time}</>;
+  
+    return <span>{time}</span>;
   }
+  
   
   // Strongly typed shapes for the OpenWeatherMap response (expanded per your pasted example)
   type WeatherMain = {
@@ -257,7 +266,7 @@ export default function Home() {
     <h1>{e.name}</h1>
     {e.weather ? (
       <>
-        <h1><LocalTime unix={Math.floor(Date.now() / 1000)} timezoneOffset={e.weather.timezone} /></h1>
+              <h1>🕒 Local Time: <LiveLocalTime timezoneOffset={e.weather.timezone} /></h1>
         <h2>{e.weather.weather[0].main}</h2>
         <h3>{e.weather.weather[0].description}</h3>
         <div className={styles.tempcontainer}>
@@ -267,8 +276,8 @@ export default function Home() {
           <p>Min temp: {e.weather.main.temp_min} °C</p>
         </div>
         <div className={styles.details}>
-          <p>Sunrise: <LocalTime unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></p>
-          <p>Sunset: <LocalTime unix={e.weather.sys.sunset} timezoneOffset={e.weather.timezone} /></p>
+        <p>🌅 Sunrise: <Sunrise unix={e.weather.sys.sunrise} timezoneOffset={e.weather.timezone} /></p>
+        <p>🌇 Sunset: <Sunset unix={e.weather.sys.sunset} timezoneOffset={e.weather.timezone} /></p>
           <p>Humidity: {e.weather.main.humidity}%</p>
           <p>
             Wind: {e.weather.wind.speed} m/s (
