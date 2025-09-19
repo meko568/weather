@@ -371,7 +371,7 @@ a.secondary {
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  .page * {
     animation: none !important;
     transition: none !important;
     scroll-behavior: auto !important;
