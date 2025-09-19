@@ -417,6 +417,7 @@ export default function Home() {
     <div className={styles.page}>
       {error && <div className={styles.error}>{error}</div>}
       <main className={styles.main}>
+        <div className={styles.minicontainer}>
         <div className={styles.search}>
           <div className={styles.searchContainer}>
             <div className={styles.countrySearchContainer}>
@@ -428,6 +429,8 @@ export default function Home() {
                 className={styles.countrySearchInput}
                 aria-label="Search country"
               />
+              </div>
+              </div>
               <select
                 value={selectedCountry}
                 onChange={(e) => {
